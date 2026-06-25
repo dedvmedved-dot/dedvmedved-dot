@@ -1,0 +1,5 @@
+nginx_listen_port: 80
+nginx_server_name: "web.local"
+nginx_document_root: "/var/www/iac-course"
+nginx_index_title: "ЛР-2. Ansible: автоматическая настройка серверов"
+nginx_index_message: "Nginx установлен и настроен через Ansible"

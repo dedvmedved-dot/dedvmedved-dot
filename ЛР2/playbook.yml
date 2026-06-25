@@ -1,0 +1,64 @@
+- name: Configure Nginx web server
+  hosts: web
+  become: true
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: true
+        cache_valid_time: 3600
+
+    - name: Install nginx package
+      apt:
+        name: nginx
+        state: present
+
+    - name: Create document root directory
+      file:
+        path: "{{ nginx_document_root }}"
+        state: directory
+        owner: www-data
+        group: www-data
+        mode: "0755"
+
+    - name: Copy index.html
+      copy:
+        src: index.html
+        dest: "{{ nginx_document_root }}/index.html"
+        owner: www-data
+        group: www-data
+        mode: "0644"
+
+    - name: Deploy nginx site configuration from template
+      template:
+        src: nginx-site.conf.j2
+        dest: /etc/nginx/sites-available/iac-course.conf
+        owner: root
+        group: root
+        mode: "0644"
+      notify: Reload nginx
+
+    - name: Enable nginx site
+      file:
+        src: /etc/nginx/sites-available/iac-course.conf
+        dest: /etc/nginx/sites-enabled/iac-course.conf
+        state: link
+      notify: Reload nginx
+
+    - name: Disable default nginx site
+      file:
+        path: /etc/nginx/sites-enabled/default
+        state: absent
+      notify: Reload nginx
+
+    - name: Ensure nginx service is started and enabled
+      systemd:
+        name: nginx
+        state: started
+        enabled: true
+
+  handlers:
+    - name: Reload nginx
+      systemd:
+        name: nginx
+        state: reloaded
