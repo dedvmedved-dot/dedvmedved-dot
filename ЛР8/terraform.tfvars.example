@@ -1,0 +1,31 @@
+# ─── ШАБЛОН terraform.tfvars ───
+# Скопируйте этот файл:  cp terraform.tfvars.example terraform.tfvars
+# Заполните ВАШИ значения вместо <...>
+# НЕ коммитьте terraform.tfvars — он в .gitignore
+
+# Proxmox API
+proxmox_endpoint = "https://<ваш-ip>:8006/"
+proxmox_api_token = "<ваш-пользователь>!<ваш-токен-id>=<ваш-секрет>"
+
+# Узел и шаблон
+proxmox_node_name  = "<ваша-нода>"
+template_vm_id     = <ваш-id-шаблона>
+
+# Хранилища
+datastore_id       = "<ваше-хранилище-для-дисков>"
+snippets_datastore = "<ваше-хранилище-для-snippets>"
+
+# Сеть
+vm_bridge          = "<ваш-мост>"
+vm_gateway         = "<ваш-шлюз>"
+
+# Диапазон VM ID (для этой лабораторной)
+vm_id_start        = <начальный-id>
+
+# SSH-ключ для cloud-init
+ssh_public_key_path = "~/.ssh/id_ed25519.pub"
+
+# Статические IP (если нужны)
+# consul1_ip = "192.168.0.181"
+# consul2_ip = "192.168.0.182"
+# ...
