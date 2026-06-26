@@ -31,10 +31,10 @@ locals {
 resource "proxmox_virtual_environment_vm" "lab05" {
   for_each = local.vms
 
-  name    = each.key
+  name      = each.key
   node_name = var.proxmox_node_name
-  vm_id   = each.value.id
-  started = true
+  vm_id     = each.value.id
+  started   = true
 
   cpu {
     cores = each.value.cores
@@ -50,9 +50,21 @@ resource "proxmox_virtual_environment_vm" "lab05" {
 
   disk {
     datastore_id = var.datastore_id
-    file_id      = "local:iso/ubuntu-24.04.1-live-server-amd64.iso"
     interface    = "scsi0"
     size         = 20
+  }
+
+  agent {
+    enabled = true
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
+  clone {
+    vm_id = var.template_vm_id
+    full  = true
   }
 
   initialization {
@@ -63,33 +75,9 @@ resource "proxmox_virtual_environment_vm" "lab05" {
         gateway = var.gateway
       }
     }
-    user_data_file_id = proxmox_virtual_environment_file.cloud_init_snippet.id
-  }
-
-  clone {
-    vm_id = var.template_vm_id
-  }
+user_account {
+  keys     = [local.ssh_key]
+  username = var.vm_user
 }
-
-resource "proxmox_virtual_environment_file" "cloud_init_snippet" {
-  node_name    = var.proxmox_node_name
-  datastore_id = "local"
-  content_type = "snippets"
-
-  source_raw {
-    data = <<-EOF
-      #cloud-config
-      ssh_pwauth: false
-      users:
-        - name: ${var.vm_user}
-          sudo: ALL=(ALL) NOPASSWD:ALL
-          shell: /bin/bash
-          ssh_authorized_keys:
-            - ${local.ssh_key}
-          lock_passwd: true
-      runcmd:
-        - hostnamectl set-hostname ${each.key}
-    EOF
-    file_name = "cloud-init-lab05.yml"
   }
 }

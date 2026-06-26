@@ -1,39 +1,58 @@
 variable "proxmox_endpoint" {
-  type      = string
-  sensitive = true
+  description = "Proxmox API endpoint"
+  type        = string
 }
 
 variable "proxmox_api_token" {
-  type      = string
-  sensitive = true
+  description = "Proxmox API token"
+  type        = string
+  sensitive   = true
 }
 
 variable "proxmox_node_name" {
-  type    = string
-  default = "pve"
+  description = "Proxmox node name"
+  type        = string
+  default     = "pve"
 }
 
-variable "template_vm_id" {
-  type    = number
-  default = 9000
+variable "vm_id" {
+  description = "Virtual machine ID"
+  type        = number
+  default     = 105
 }
 
-variable "datastore_id" {
-  type    = string
-  default = "vm-storage"
+variable "vm_name" {
+  description = "Virtual machine name"
+  type        = string
+  default     = "web-01"
 }
 
 variable "vm_user" {
-  type    = string
-  default = "ubuntu"
+  description = "Default user inside VM"
+  type        = string
+  default     = "ubuntu"
+}
+
+variable "vm_ip" {
+  description = "Static IP address of the VM"
+  type        = string
+  default     = "192.168.0.101/24"
+}
+
+variable "vm_gateway" {
+  description = "Default gateway"
+  type        = string
+  default     = "192.168.0.1"
 }
 
 variable "ssh_public_key_path" {
-  type    = string
-  default = "~/.ssh/id_ed25519.pub"
+  description = "Path to SSH public key"
+  type        = string
+  default     = "~/.ssh/id_ed25519.pub"
 }
 
-variable "gateway" {
-  type    = string
-  default = "192.168.0.1"
+variable "datastore_id" {
+  description = "Proxmox datastore for disks"
+  type        = string
+  default     = "vm-storage"
 }

@@ -16,11 +16,11 @@ provider "proxmox" {
 
 locals {
   ssh_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
-  vms =     {
+  vms = {
     "pxc1" = { id = 507, ip = "192.168.0.171/24", cores = 2, mem = 4096, disk = 30 }
     "pxc2" = { id = 508, ip = "192.168.0.172/24", cores = 2, mem = 4096, disk = 30 }
     "pxc3" = { id = 509, ip = "192.168.0.173/24", cores = 2, mem = 4096, disk = 30 }
-    }
+  }
 }
 
 resource "proxmox_virtual_environment_vm" "ЛР7" {
@@ -49,6 +49,14 @@ resource "proxmox_virtual_environment_vm" "ЛР7" {
     size         = each.value.disk
   }
 
+  agent {
+    enabled = true
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
   clone {
     vm_id = var.template_vm_id
     full  = true
@@ -62,29 +70,9 @@ resource "proxmox_virtual_environment_vm" "ЛР7" {
         gateway = var.gateway
       }
     }
-    user_data_file_id = proxmox_virtual_environment_file.cloud_init_ЛР7.id
-  }
+user_account {
+  keys     = [local.ssh_key]
+  username = var.vm_user
 }
-
-resource "proxmox_virtual_environment_file" "cloud_init_ЛР7" {
-  node_name    = var.proxmox_node_name
-  datastore_id = "local"
-  content_type = "snippets"
-
-  source_raw {
-    data = <<-EOF
-      #cloud-config
-      ssh_pwauth: false
-      users:
-        - name: ${var.vm_user}
-          sudo: ALL=(ALL) NOPASSWD:ALL
-          shell: /bin/bash
-          ssh_authorized_keys:
-            - ${local.ssh_key}
-          lock_passwd: true
-      runcmd:
-        - hostnamectl set-hostname each.key
-    EOF
-    file_name = "cloud-init-ЛР7.yml"
   }
 }

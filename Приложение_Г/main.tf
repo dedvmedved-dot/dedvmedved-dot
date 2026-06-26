@@ -16,12 +16,12 @@ provider "proxmox" {
 
 locals {
   ssh_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
-  vms =     {
-    "iscsi1" = { id = 1130, ip = "192.168.0.230/24", cores = 2, mem = 2048, disk = 20 }
-    "gfs-node1" = { id = 1131, ip = "192.168.0.231/24", cores = 2, mem = 2048, disk = 20 }
-    "gfs-node2" = { id = 1132, ip = "192.168.0.232/24", cores = 2, mem = 2048, disk = 20 }
-    "gfs-node3" = { id = 1133, ip = "192.168.0.233/24", cores = 2, mem = 2048, disk = 20 }
-    }
+  vms = {
+    "iscsi1"     = { id = 1130, ip = "192.168.0.230/24", cores = 2, mem = 2048, disk = 20 }
+    "gfs-node1"  = { id = 1131, ip = "192.168.0.231/24", cores = 2, mem = 2048, disk = 20 }
+    "gfs-node2"  = { id = 1132, ip = "192.168.0.232/24", cores = 2, mem = 2048, disk = 20 }
+    "gfs-node3"  = { id = 1133, ip = "192.168.0.233/24", cores = 2, mem = 2048, disk = 20 }
+  }
 }
 
 resource "proxmox_virtual_environment_vm" "Приложение_Г" {
@@ -50,6 +50,14 @@ resource "proxmox_virtual_environment_vm" "Приложение_Г" {
     size         = each.value.disk
   }
 
+  agent {
+    enabled = true
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
   clone {
     vm_id = var.template_vm_id
     full  = true
@@ -63,29 +71,9 @@ resource "proxmox_virtual_environment_vm" "Приложение_Г" {
         gateway = var.gateway
       }
     }
-    user_data_file_id = proxmox_virtual_environment_file.cloud_init_Приложение_Г.id
-  }
+user_account {
+  keys     = [local.ssh_key]
+  username = var.vm_user
 }
-
-resource "proxmox_virtual_environment_file" "cloud_init_Приложение_Г" {
-  node_name    = var.proxmox_node_name
-  datastore_id = "local"
-  content_type = "snippets"
-
-  source_raw {
-    data = <<-EOF
-      #cloud-config
-      ssh_pwauth: false
-      users:
-        - name: ${var.vm_user}
-          sudo: ALL=(ALL) NOPASSWD:ALL
-          shell: /bin/bash
-          ssh_authorized_keys:
-            - ${local.ssh_key}
-          lock_passwd: true
-      runcmd:
-        - hostnamectl set-hostname each.key
-    EOF
-    file_name = "cloud-init-Приложение_Г.yml"
   }
 }

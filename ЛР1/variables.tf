@@ -21,6 +21,12 @@ variable "vm_id" {
   default     = 101
 }
 
+variable "datastore_id" {
+  description = "Proxmox datastore for disks"
+  type        = string
+  default     = "vm-storage"
+}
+
 variable "vm_name" {
   description = "Virtual machine name"
   type        = string

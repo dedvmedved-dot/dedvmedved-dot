@@ -23,6 +23,12 @@ variable "ssh_public_key_path" {
   default = "~/.ssh/id_ed25519.pub"
 }
 
+variable "datastore_id" {
+  description = "Proxmox datastore for disks"
+  type        = string
+  default     = "vm-storage"
+}
+
 variable "gateway" {
   type    = string
   default = "192.168.0.1"

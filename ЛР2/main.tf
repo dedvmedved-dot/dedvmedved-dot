@@ -15,26 +15,31 @@ provider "proxmox" {
 }
 
 locals {
-  ssh_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
-  vms =     {
-    "web-01" = { id = 105, ip = "192.168.0.101/24", cores = 2, mem = 2048, disk = 20 }
-    }
+  ssh_public_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
 }
 
-resource "proxmox_virtual_environment_vm" "ЛР2" {
-  for_each = local.vms
+resource "proxmox_virtual_environment_vm" "web01" {
+  name        = var.vm_name
+  description = "Lab 2 VM — Ansible managed node"
+  tags        = ["iac-course", "lab02", "tofu"]
 
-  name      = each.key
   node_name = var.proxmox_node_name
-  vm_id     = each.value.id
-  started   = true
+  vm_id     = var.vm_id
+
+  started = true
+
+  clone {
+    vm_id = 9000
+    full  = true
+  }
 
   cpu {
-    cores = each.value.cores
+    cores = 2
+    type  = "host"
   }
 
   memory {
-    dedicated = each.value.mem
+    dedicated = 2048
   }
 
   network_device {
@@ -44,45 +49,31 @@ resource "proxmox_virtual_environment_vm" "ЛР2" {
   disk {
     datastore_id = var.datastore_id
     interface    = "scsi0"
-    size         = each.value.disk
-  }
-
-  clone {
-    vm_id = var.template_vm_id
-    full  = true
+    size         = 20
+    file_format  = "raw"
   }
 
   initialization {
     datastore_id = var.datastore_id
+
     ip_config {
       ipv4 {
-        address = each.value.ip
-        gateway = var.gateway
+        address = var.vm_ip
+        gateway = var.vm_gateway
       }
     }
-    user_data_file_id = proxmox_virtual_environment_file.cloud_init_ЛР2.id
+
+    user_account {
+      username = var.vm_user
+      keys     = [local.ssh_public_key]
+    }
   }
-}
 
-resource "proxmox_virtual_environment_file" "cloud_init_ЛР2" {
-  node_name    = var.proxmox_node_name
-  datastore_id = "local"
-  content_type = "snippets"
+  operating_system {
+    type = "l26"
+  }
 
-  source_raw {
-    data = <<-EOF
-      #cloud-config
-      ssh_pwauth: false
-      users:
-        - name: ${var.vm_user}
-          sudo: ALL=(ALL) NOPASSWD:ALL
-          shell: /bin/bash
-          ssh_authorized_keys:
-            - ${local.ssh_key}
-          lock_passwd: true
-      runcmd:
-        - hostnamectl set-hostname each.key
-    EOF
-    file_name = "cloud-init-ЛР2.yml"
+  agent {
+    enabled = true
   }
 }

@@ -1,7 +1,3 @@
-# ЛР9: Proxmox VE + Terraform/OpenTofu — массовое создание ВМ
-# Эта лабораторная работа учит создавать N ВМ через count/for_each
-# Сквозные исправления: clone, ubuntu, vm-storage, без cicustom
-
 terraform {
   required_version = ">= 1.6.0"
   required_providers {
@@ -16,6 +12,10 @@ provider "proxmox" {
   endpoint  = var.proxmox_endpoint
   api_token = var.proxmox_api_token
   insecure  = true
+}
+
+locals {
+  ssh_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
 }
 
 variable "vm_count" {
@@ -58,6 +58,14 @@ resource "proxmox_virtual_environment_vm" "mass" {
     size         = 20
   }
 
+  agent {
+    enabled = true
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
   clone {
     vm_id = var.template_vm_id
     full  = true
@@ -71,5 +79,9 @@ resource "proxmox_virtual_environment_vm" "mass" {
         gateway = var.gateway
       }
     }
+user_account {
+  keys     = [local.ssh_key]
+  username = var.vm_user
+}
   }
 }

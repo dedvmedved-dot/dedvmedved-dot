@@ -15,13 +15,14 @@ provider "proxmox" {
 }
 
 locals {
-  vms =     {
+  ssh_key = trimspace(file(pathexpand(var.ssh_public_key_path)))
+  vms = {
     "consul1" = { id = 608, ip = "192.168.0.181/24", cores = 2, mem = 2048, disk = 20 }
     "consul2" = { id = 609, ip = "192.168.0.182/24", cores = 2, mem = 2048, disk = 20 }
     "consul3" = { id = 610, ip = "192.168.0.183/24", cores = 2, mem = 2048, disk = 20 }
-    "web1" = { id = 611, ip = "192.168.0.184/24", cores = 1, mem = 1024, disk = 20 }
-    "web2" = { id = 612, ip = "192.168.0.185/24", cores = 1, mem = 1024, disk = 20 }
-    }
+    "web1"    = { id = 611, ip = "192.168.0.184/24", cores = 1, mem = 1024, disk = 20 }
+    "web2"    = { id = 612, ip = "192.168.0.185/24", cores = 1, mem = 1024, disk = 20 }
+  }
 }
 
 resource "proxmox_virtual_environment_vm" "ЛР8" {
@@ -50,6 +51,14 @@ resource "proxmox_virtual_environment_vm" "ЛР8" {
     size         = each.value.disk
   }
 
+  agent {
+    enabled = true
+  }
+
+  operating_system {
+    type = "l26"
+  }
+
   clone {
     vm_id = var.template_vm_id
     full  = true
@@ -63,6 +72,9 @@ resource "proxmox_virtual_environment_vm" "ЛР8" {
         gateway = var.gateway
       }
     }
-    user_data_file_id = "snippets:cloud-init-lr8.yml"
+    user_account {
+      keys     = [local.ssh_key]
+      username = var.vm_user
+    }
   }
 }

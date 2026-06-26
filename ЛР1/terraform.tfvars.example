@@ -8,6 +8,8 @@ proxmox_endpoint = "https://<ваш-ip>:8006/"
 # Proxmox API-токен
 proxmox_api_token = "<пользователь>!<токен-id>=<секрет>"
 
+datastore_id   = "vm-storage"
+
 proxmox_node_name = "pve"
 
 vm_id = 101

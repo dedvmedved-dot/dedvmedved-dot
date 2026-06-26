@@ -1,9 +1,0 @@
-proxmox_endpoint  = "https://192.168.0.200:8006/"
-proxmox_api_token = "terraform@pve!lab-token=c3fc7203-d444-4ef2-b175-d0ecd17e5e97"
-proxmox_node_name = "pve"
-vm_id             = 105
-vm_name           = "web-01"
-vm_user           = "ubuntu"
-vm_ip             = "192.168.0.101/24"
-vm_gateway        = "192.168.0.1"
-ssh_public_key_path = "~/.ssh/id_ed25519.pub"
